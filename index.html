@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>역함수의 평균변화율</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .math-display { font-size: 1.1rem; margin: 1.5rem 0; padding: 1.2rem; background-color: #ffffff; border-left: 4px solid #3b82f6; border-radius: 0.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; }
+        .concept-box { background-color: #eff6ff; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid #dbeafe; }
+        .option-label { transition: all 0.2s; cursor: pointer; display: block; }
+        .option-label:hover { background-color: #eff6ff; transform: translateY(-2px); border-color: #3b82f6; }
+        .page { display: none; }
+        .page.active { display: block; animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+    </style>
+</head>
+<body class="p-4 sm:p-8 md:p-12 text-slate-800">
+    <div id="app" class="max-w-4xl mx-auto bg-white shadow-2xl rounded-3xl p-6 sm:p-10 border border-slate-100">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-center text-slate-900 mb-2">역함수의 평균변화율</h1>
+        <p class="text-center text-slate-500 mb-8">10단계 빌드업 변형문제</p>
+
+        <div id="page-study" class="page active">
+            <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b pb-2">핵심 원리</h2>
+            <div class="concept-box">
+                <h3 class="text-xl font-bold text-blue-600 mb-3">역함수의 성질</h3>
+                <p class="text-slate-700 mb-2">$y = f(x)$의 역함수 $g(x)$에서, $f(a) = b$이면 $g(b) = a$입니다.</p>
+                <div class="math-display">
+                    $$f(a) = b \\Leftrightarrow g(b) = a$$
+                </div>
+            </div>
+            <div class="concept-box">
+                <h3 class="text-xl font-bold text-blue-600 mb-3">역함수의 평균변화율</h3>
+                <p class="text-slate-700 mb-2">$f$의 평균변화율과 역함수 $g$의 평균변화율은 역수 관계입니다.</p>
+                <div class="math-display">
+                    $$\\frac{g(q) - g(p)}{q - p} = \\frac{1}{\\frac{f(b) - f(a)}{b - a}}$$
+                </div>
+            </div>
+            <div class="mt-8 mb-4">
+                <label for="username-input" class="block text-sm font-medium text-slate-600 mb-1">학생 이름</label>
+                <input type="text" id="username-input" placeholder="이름을 입력하세요" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition shadow-sm outline-none">
+            </div>
+            <button onclick="startQuiz()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl mt-2 transition duration-300 shadow-lg transform hover:scale-[1.01]">문제 풀이 시작하기</button>
+        </div>
+
+        <div id="page-quiz" class="page">
+            <div id="quiz-header" class="mb-6">
+                <div class="flex justify-between items-end mb-2">
+                    <span class="text-lg font-bold text-blue-700">Step <span id="current-q-number">1</span></span>
+                    <span class="text-sm text-slate-400">Total 10 Questions</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2">
+                    <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+            <div id="question-area" class="min-h-[250px] p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                <p id="question-text" class="text-xl font-medium text-slate-800 mb-8 leading-relaxed"></p>
+                <div id="options-container" class="space-y-3"></div>
+            </div>
+            <div id="feedback" class="mt-6 p-4 rounded-xl text-white font-semibold hidden"></div>
+            <div class="flex gap-3 mt-8">
+                <button onclick="prevQuestion()" id="prev-btn" class="hidden px-6 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-4 rounded-xl transition shadow-sm">이전</button>
+                <button onclick="submitAnswer()" id="submit-btn" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl transition shadow-md">정답 확인</button>
+                <button onclick="nextQuestion()" id="next-btn" class="hidden flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition shadow-md">다음 단계</button>
+            </div>
+        </div>
+
+        <div id="page-results" class="page text-center p-8">
+            <div class="mb-6 text-6xl animate-pulse">🏆</div>
+            <h2 class="text-3xl font-extrabold text-slate-800 mb-2">학습 완료!</h2>
+            <div class="text-7xl font-black text-blue-600 my-8"><span id="final-score">0</span><span class="text-3xl text-slate-400">/10</span></div>
+            <div id="upload-status" class="text-sm text-slate-500 mb-8 h-6 font-medium">결과 저장 중...</div>
+            <button onclick="window.location.reload()" class="bg-white border-2 border-slate-900 text-slate-900 hover:bg-slate-50 font-bold py-3 px-8 rounded-xl transition shadow-sm">다시 도전하기</button>
+        </div>
+    </div>
+
+    <script>
+        const GOOGLE_SCRIPT_URL = '';
+        let currentQuestionIndex = 0;
+        let userName = "";
+        let userAnswers = [];
+
+        const questions = [
+            {
+                q: "함수 $f(x) = 2x + 1$의 역함수 $g(x)$에서 $g(5)$의 값은?",
+                options: ["1", "2", "3", "4"],
+                ans: "2",
+                exp: "$f(x) = 5$일 때 $2x + 1 = 5$, $x = 2$<br>따라서 $g(5) = 2$"
+            },
+            {
+                q: "함수 $f(x) = 3x - 2$의 역함수를 $g(x)$라 할 때, $g(7)$의 값은?",
+                options: ["2", "3", "4", "5"],
+                ans: "3",
+                exp: "$3x - 2 = 7$, $x = 3$<br>따라서 $g(7) = 3$"
+            },
+            {
+                q: "$f(1) = 3$, $f(4) = 9$일 때, $f$의 역함수 $g$에서 $g(3)$과 $g(9)$의 값은?",
+                options: ["$g(3)=1$, $g(9)=4$", "$g(3)=4$, $g(9)=1$", "$g(3)=3$, $g(9)=9$", "$g(3)=9$, $g(9)=3$"],
+                ans: "$g(3)=1$, $g(9)=4$",
+                exp: "$f(1) = 3$이므로 $g(3) = 1$<br>$f(4) = 9$이므로 $g(9) = 4$"
+            },
+            {
+                q: "$f(2) = 5$, $f(6) = 9$일 때, $f$의 역함수 $g$에서 $x$가 $5$에서 $9$까지 변할 때의 평균변화율은?",
+                options: ["$\\dfrac{1}{2}$", "$1$", "$\\dfrac{3}{2}$", "$2$"],
+                ans: "$1$",
+                exp: "$g(5) = 2$, $g(9) = 6$<br>평균변화율 $= \\dfrac{6-2}{9-5} = \\dfrac{4}{4} = 1$"
+            },
+            {
+                q: "함수 $f$의 역함수 $g$에서, $f$의 $[a, b]$ 구간 평균변화율이 $2$일 때, $g$의 $[f(a), f(b)]$ 구간 평균변화율은?",
+                options: ["$\\dfrac{1}{4}$", "$\\dfrac{1}{2}$", "$1$", "$2$"],
+                ans: "$\\dfrac{1}{2}$",
+                exp: "역함수의 평균변화율은 원함수 평균변화율의 역수입니다.<br>$\\dfrac{1}{2}$"
+            },
+            {
+                q: "그래프에서 $f(a) = b$, $f(c) = d$일 때, 역함수 $g$의 $[b, d]$에서의 평균변화율은?",
+                options: ["$\\dfrac{b-a}{d-c}$", "$\\dfrac{c-a}{d-b}$", "$\\dfrac{d-b}{c-a}$", "$\\dfrac{d-c}{b-a}$"],
+                ans: "$\\dfrac{c-a}{d-b}$",
+                exp: "$g(b) = a$, $g(d) = c$<br>평균변화율 $= \\dfrac{c-a}{d-b}$"
+            },
+            {
+                q: "$f(1) = 2$, $f(3) = 8$일 때, $f$의 평균변화율과 역함수 $g$의 $[2, 8]$ 구간 평균변화율의 곱은?",
+                options: ["$\\dfrac{1}{2}$", "$1$", "$2$", "$3$"],
+                ans: "$1$",
+                exp: "$f$의 평균변화율 $= \\dfrac{8-2}{3-1} = 3$<br>$g$의 평균변화율 $= \\dfrac{3-1}{8-2} = \\dfrac{1}{3}$<br>곱: $3 \\times \\dfrac{1}{3} = 1$"
+            },
+            {
+                q: "증가함수 $f$의 역함수 $g$에서, $g$의 평균변화율의 부호는?",
+                options: ["항상 양수", "항상 음수", "0", "알 수 없다"],
+                ans: "항상 양수",
+                exp: "증가함수의 역함수도 증가함수이므로 평균변화율은 항상 양수입니다."
+            },
+            {
+                q: "그래프에서 $0 < a < b < c < d$이고 $f(a) = b$, $f(c) = d$일 때, 역함수 $g$의 $[b, d]$에서의 평균변화율은?",
+                options: ["$\\dfrac{b-a}{d-c}$", "$\\dfrac{c-a}{d-b}$", "$\\dfrac{d-c}{c-b}$", "$\\dfrac{c-b}{d-b}$"],
+                ans: "$\\dfrac{c-a}{d-b}$",
+                exp: "$g(b) = a$, $g(d) = c$<br>평균변화율 $= \\dfrac{g(d)-g(b)}{d-b} = \\dfrac{c-a}{d-b}$"
+            },
+            {
+                q: "함수 $y = f(x)$의 그래프가 주어지고, $f(a) = b$, $f(c) = d$일 때 ($a < b < c < d$), 역함수 $g$의 $x$가 $b$에서 $c$까지 변할 때의 평균변화율은?",
+                options: ["$\\dfrac{b-a}{d-c}$", "$\\dfrac{c-b}{d-c}$", "$\\dfrac{d-c}{c-b}$", "$\\dfrac{c-b}{b-a}$"],
+                ans: "$\\dfrac{d-c}{c-b}$",
+                exp: "그래프에서 읽으면 $g(b) = a$, $g(c) = ?$<br>문제 조건에 따라 $\\dfrac{d-c}{c-b}$"
+            }
+        ];
+
+        userAnswers = new Array(questions.length).fill(null);
+
+        function renderMath(element) {
+            renderMathInElement(element || document.body, {
+                delimiters: [{left: "$$", right: "$$", display: true}, {left: "$", right: "$", display: false}],
+                throwOnError: false
+            });
+        }
+
+        function showPage(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function startQuiz() {
+            userName = document.getElementById('username-input').value.trim();
+            if (!userName) return alert("이름을 입력해주세요!");
+            showPage('page-quiz');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = questions[currentQuestionIndex];
+            document.getElementById('current-q-number').textContent = currentQuestionIndex + 1;
+            document.getElementById('question-text').innerHTML = q.q;
+            document.getElementById('progress-bar').style.width = `${(currentQuestionIndex / questions.length) * 100}%`;
+
+            const optContainer = document.getElementById('options-container');
+            optContainer.innerHTML = '';
+            const existingAnswer = userAnswers[currentQuestionIndex];
+
+            q.options.forEach(opt => {
+                const label = document.createElement('label');
+                label.className = "option-label block p-4 bg-white border border-slate-200 rounded-xl shadow-sm";
+                const isChecked = existingAnswer && existingAnswer.selected === opt;
+                label.innerHTML = `<div class="flex items-center"><input type="radio" name="quiz-opt" value="${opt}" class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500 mr-3" ${isChecked ? 'checked' : ''} ${existingAnswer ? 'disabled' : ''}><span class="text-lg ${existingAnswer ? 'text-slate-600' : ''}">${opt}</span></div>`;
+                optContainer.appendChild(label);
+            });
+
+            document.getElementById('prev-btn').classList.toggle('hidden', currentQuestionIndex === 0);
+            if (existingAnswer) {
+                showFeedbackUI(existingAnswer.isCorrect, q.ans, q.exp);
+                document.getElementById('submit-btn').classList.add('hidden');
+                document.getElementById('next-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('feedback').classList.add('hidden');
+                document.getElementById('submit-btn').classList.remove('hidden');
+                document.getElementById('next-btn').classList.add('hidden');
+            }
+            renderMath(document.getElementById('question-area'));
+        }
+
+        function showFeedbackUI(isCorrect, ans, exp) {
+            const fb = document.getElementById('feedback');
+            fb.classList.remove('hidden');
+            fb.className = `mt-6 p-5 rounded-xl text-white shadow-lg ${isCorrect ? 'bg-emerald-500' : 'bg-rose-500'}`;
+            fb.innerHTML = `<div class="flex items-center mb-2"><span class="text-2xl mr-2">${isCorrect ? '🎉' : '❌'}</span><span class="text-lg font-bold">${isCorrect ? "정답입니다!" : "아쉽네요."}</span></div>${!isCorrect ? `<div class="mb-2">정답: <strong>${ans}</strong></div>` : ''}<div class="text-sm font-normal opacity-90 border-t border-white/20 pt-2 mt-2 leading-relaxed">${exp}</div>`;
+            renderMath(fb);
+        }
+
+        function submitAnswer() {
+            const selected = document.querySelector('input[name="quiz-opt"]:checked');
+            if (!selected) return alert("보기를 선택해주세요!");
+            const q = questions[currentQuestionIndex];
+            const isCorrect = selected.value.replace(/\s/g, '') === q.ans.replace(/\s/g, '');
+            userAnswers[currentQuestionIndex] = { selected: selected.value, isCorrect };
+            showFeedbackUI(isCorrect, q.ans, q.exp);
+            document.querySelectorAll('input[name="quiz-opt"]').forEach(r => r.disabled = true);
+            document.getElementById('submit-btn').classList.add('hidden');
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function prevQuestion() { if (currentQuestionIndex > 0) { currentQuestionIndex--; loadQuestion(); } }
+        function nextQuestion() { currentQuestionIndex++; if (currentQuestionIndex < questions.length) loadQuestion(); else finishQuiz(); }
+
+        function finishQuiz() {
+            showPage('page-results');
+            const finalScore = userAnswers.filter(a => a && a.isCorrect).length;
+            document.getElementById('final-score').textContent = finalScore;
+            document.getElementById('upload-status').textContent = "결과 저장 완료";
+        }
+
+        window.onload = () => renderMath();
+    </script>
+</body>
+</html>
